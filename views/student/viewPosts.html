@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Registered Lectures and Posts</title>
+</head>
+<body>
+    <h1>Registered Lectures</h1>
+    <div id="lecturesContainer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/student/addedlectures/data') // Make sure the URL matches your server setup
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch lectures');
+                    return response.json();
+                })
+                .then(lectures => {
+                    const container = document.getElementById('lecturesContainer');
+                    lectures.forEach((lecture, index) => {
+                        // Create lecture element
+                        const lectureElement = document.createElement('div');
+                        lectureElement.innerHTML = `
+                            <h3>${lecture.title}</h3>
+                            <h4>Posts:</h4>
+                            <ul>
+                                ${lecture.posts.map(post => `<li>${post.content}</li>`).join('')}
+                            </ul>
+                        `;
+
+                        // Append lecture element to container
+                        container.appendChild(lectureElement);
+
+                        // If it's not the last lecture, add a separator line
+                        if (index < lectures.length - 1) {
+                            const separator = document.createElement('hr'); // Using <hr> for the line
+                            container.appendChild(separator);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('lecturesContainer').textContent = 'Failed to load lectures.';
+                });
+        });
+    </script>
+</body>
+</html>

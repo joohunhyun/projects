@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Lectures</title>
+</head>
+<body>
+    <h1>Available Lectures</h1>
+    <ul id="lecturesContainer"></ul>
+
+    <script>
+        function fetchAndDisplayLectures() {
+            fetch('/lectures')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch lectures');
+                    return response.json();
+                })
+                .then(lectures => {
+                    const container = document.getElementById('lecturesContainer');
+                    lectures.forEach(lecture => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `${lecture.title} - <button onclick="registerForLecture(${lecture.id})">Register</button>`;
+                        container.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching lectures:', error);
+                    document.getElementById('lecturesContainer').innerText = 'Failed to load lectures.';
+                });
+        }
+
+        function registerForLecture(lectureId) {
+            fetch('/student/addlectures/registercourses', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ lectureId })
+            })
+            .then(response => {
+                if (response.status === 409) {
+                    // If there's a specific conflict error, handle it separately
+                    return response.text().then(text => { throw new Error(text); });
+                } else if (!response.ok) {
+                    // Handle other types of HTTP errors
+                    throw new Error('Failed to register for the course');
+                }
+                // Attempt to parse the response as JSON but handle non-JSON responses gracefully
+                return response.text().then(text => {
+                    try {
+                        // Try to parse the text as JSON
+                        return JSON.parse(text);
+                    } catch (error) {
+                        // If parsing fails (meaning the response was not JSON), just return the text
+                        return { message: text }; // Encapsulate the text in an object to standardize the structure
+                    }
+                });
+            })
+            .then(data => {
+                // Use the 'message' from the data if available, or a default success message
+                alert(data.message || 'Registration successful!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+            });
+        }
+        window.onload = fetchAndDisplayLectures;
+    </script>
+</body>
+</html>

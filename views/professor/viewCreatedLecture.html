@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Lectures</title>
+</head>
+<body>
+    <h1>Created Lectures</h1>
+    <ul id="lecturesContainer"></ul>
+
+    <script>
+        function fetchAndDisplayLectures() {
+            fetch('/lectures') // Make sure this matches your actual endpoint
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch lectures');
+                    }
+                    return response.json();
+                })
+                .then(lectures => {
+                    const container = document.getElementById('lecturesContainer');
+                    lectures.forEach(lecture => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = lecture.title; // Simpler, just setting text content
+                        container.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching lectures:', error);
+                    document.getElementById('lecturesContainer').textContent = 'Failed to load lectures.';
+                });
+        }
+
+        window.onload = fetchAndDisplayLectures;
+    </script>
+</body>
+</html>
